@@ -35,7 +35,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 		break;
 
 		case SYS_WRITE:
-		printf("%s","entryto syscall");
+		//printf("%s","entryto syscall");
 		if(*(p+5)==1)
 		{
 			putbuf(*(p+6),*(p+7));

@@ -480,7 +480,7 @@ setup_stack (void **esp, char * file_name)
       memcpy(*esp,token,strlen(token) + 1);
 
       argv[i]=*esp;
-      printf("%s hiiihihdsxsxsx",argv[i]);
+      //printf("%s hiiihihdsxsxsx",argv[i]);
     }
 
   while((int)*esp%4!=0)
