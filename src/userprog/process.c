@@ -220,6 +220,7 @@ bool
 load (const char *file_name, void (**eip) (void), void **esp) 
 {
   //printf("In load\n");
+  //hello;
   struct thread *t = thread_current ();
   struct Elf32_Ehdr ehdr;
   struct file *file = NULL;
