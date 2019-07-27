@@ -84,7 +84,8 @@ struct thread
     uint8_t *stack;                     /* Saved stack pointer. */
     int priority;                       /* Priority. */
     struct list_elem allelem;           /* List element for all threads list. */
-
+    struct list opened_files;           /* List of all opened files.*/
+     int  file_count;             /*countof the opened files.*/
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
 

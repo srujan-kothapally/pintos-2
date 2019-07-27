@@ -73,7 +73,7 @@ filesys_open (const char *name)
     dir_lookup (dir, name, &inode);
   dir_close (dir);
 
-  return cofile_open (inode);
+  return file_open (inode);
 }
 
 /* Deletes the file named NAME.
