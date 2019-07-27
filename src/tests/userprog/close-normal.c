@@ -9,6 +9,7 @@ test_main (void)
 {
   int handle;
   CHECK ((handle = open ("sample.txt")) > 1, "open \"sample.txt\"");
+  //msg("%dhoio",handle);
   msg ("close \"sample.txt\"");
   close (handle);
 }
