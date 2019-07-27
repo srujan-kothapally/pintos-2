@@ -36,6 +36,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 
 		case SYS_WRITE:
 		//printf("%s","entryto syscall");
+<<<<<<< HEAD
 		//if(*(p+5)==1)
 		//{
                        // *p +=1;
@@ -60,6 +61,11 @@ syscall_handler (struct intr_frame *f UNUSED)
 		struct file *fx = filesys_open(*(p+1));
 		if(fx==NULL){
 			f->eax=-1;
+=======
+		if(*(p+5)==1)
+		{
+			putbuf(*(p+6),*(p+7));
+>>>>>>> ec7db650012ff00e802cad3e154c7c0e5844d258
 		}
 		
 	
