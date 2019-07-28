@@ -48,8 +48,9 @@ syscall_handler (struct intr_frame *f UNUSED)
 		break;
 
 		case SYS_EXIT:
-		thread_current()->parent->ex = true;
 		thread_current()->exit_status = *(p+1);
+		thread_current()->parent->cstatus =*(p+1);
+		thread_current()->parent->ex = true;
         thread_exit();
 		break;
 
@@ -58,6 +59,8 @@ syscall_handler (struct intr_frame *f UNUSED)
 		f->eax = filesys_create(*(p+1),*(p+2));
 		}
 		else{
+			thread_current()->parent->ex = true;
+			
 			thread_current()->exit_status = -1;
             thread_exit();
 		}
@@ -73,7 +76,20 @@ syscall_handler (struct intr_frame *f UNUSED)
 		break;
 
 		case SYS_EXEC:
-		f->eax = process_execute(*(p+1));
+		if(*(p+1)!=NULL){
+		f->eax  = process_execute(*(p+1));
+		//print("%deeeeeeeeeeeeee",f->eax);
+		//if(p==-1){
+
+			//thread_current()->exit_status = -1;
+			//thread_current()->parent->ex = true;
+		    //thread_exit();
+		//}
+		
+		}
+		//thread_current()->parent->ex = true;
+		//thread_exit();
+		//printf("hello");
 		/*if(*(p+1)!=NULL){
         pid_t *p = process_execute(*(p+1));
 		if(p==TID_ERROR){
@@ -106,14 +122,13 @@ syscall_handler (struct intr_frame *f UNUSED)
 		   f->eax = *(p+3);
 	   }
 	   else{
-		//printf("%ddddddddddddddddddd",*(p+1));
-		//printf("%ddddddddddddddddddd",*(p+1));
+
 		struct file_pointer *fn = get_opened_file(*(p+1));
 		if(fn==NULL){
 			f->eax=-1;
 		}
 		else{
-		//printf("%ddddddddddddddddddd",*(p+1));
+
 		f->eax = file_read(fn->fname,*(p+2),*(p+3));
 		}
 		}
@@ -140,6 +155,16 @@ syscall_handler (struct intr_frame *f UNUSED)
 
 		case SYS_CLOSE:
         close_file(*(p+1));
+		break;
+
+		case SYS_WAIT:
+		if(*(p+1)==NULL){
+        return -1;
+        }
+		else{
+			f->eax=thread_current()->cstatus;
+		}
+        
 		break;
 
 		default:

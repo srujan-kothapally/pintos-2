@@ -92,6 +92,7 @@ struct thread
     int64_t waketick;
     int exit_status;
     bool ex;
+    int cstatus;
 
     struct thread* parent;
 
