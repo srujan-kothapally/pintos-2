@@ -1,10 +1,18 @@
 #include "userprog/syscall.h"
 #include <stdio.h>
-#include "devices/input.h"
 #include <syscall-nr.h>
+#include <user/syscall.h>
+#include "devices/input.h"
+#include "devices/shutdown.h"
+#include "filesys/file.h"
+#include "filesys/filesys.h"
 #include "threads/interrupt.h"
+#include "threads/malloc.h"
+#include "threads/synch.h"
 #include "threads/thread.h"
-#include "process.h"
+#include "threads/vaddr.h"
+#include "userprog/pagedir.h"
+#include "userprog/process.h"
 //void close_file(int fd);
 static void syscall_handler (struct intr_frame *);
 
@@ -41,7 +49,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 
 		case SYS_EXIT:
 		thread_current()->parent->ex = true;
-		
+		thread_current()->exit_status = *(p+1);
         thread_exit();
 		break;
 
@@ -50,8 +58,8 @@ syscall_handler (struct intr_frame *f UNUSED)
 		f->eax = filesys_create(*(p+1),*(p+2));
 		}
 		else{
-			printf ("%s: exit(-1)\n", *(p+1));
-			thread_exit();
+			thread_current()->exit_status = -1;
+            thread_exit();
 		}
 		
 		break;
@@ -62,6 +70,19 @@ syscall_handler (struct intr_frame *f UNUSED)
         struct file_pointer *fn = get_opened_file(*(p+1));
 		f->eax = file_length(fn->fname);
 		}
+		break;
+
+		case SYS_EXEC:
+		f->eax = process_execute(*(p+1));
+		/*if(*(p+1)!=NULL){
+        pid_t *p = process_execute(*(p+1));
+		if(p==TID_ERROR){
+			f->eax=-1;
+		}
+		else{
+			f->eax=p;
+		}
+		}*/
 		break;
 
 		case SYS_WRITE:

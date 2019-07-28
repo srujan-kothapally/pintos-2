@@ -463,6 +463,7 @@ init_thread (struct thread *t, const char *name, int priority)
   t->parent = running_thread();
   list_init (&t->opened_files);
   t->file_count=2;
+  t->exit_status=0;
   list_push_back (&all_list, &t->allelem);
 }
 

@@ -90,7 +90,7 @@ struct thread
     struct list_elem elem;              /* List element. */
 
     int64_t waketick;
-
+    int exit_status;
     bool ex;
 
     struct thread* parent;
