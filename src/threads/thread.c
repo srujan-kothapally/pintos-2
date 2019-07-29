@@ -465,6 +465,7 @@ init_thread (struct thread *t, const char *name, int priority)
   t->file_count=2;
   t->exit_status=0;
   t->cstatus = 0;
+  t->opfile = NULL;
   list_push_back (&all_list, &t->allelem);
 }
 

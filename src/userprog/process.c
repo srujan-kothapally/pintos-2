@@ -17,45 +17,70 @@
 #include "threads/palloc.h"
 #include "threads/thread.h"
 #include "threads/vaddr.h"
+#include "userprog/syscall.h"
 //test git
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
+struct file_pointer* close_opened_file(char* ofn);
 
 /* Starts a new thread running a user program loaded from
    FILENAME.  The new thread may be scheduled (and may even exit)
    before process_execute() returns.  Returns the new process's
    thread id, or TID_ERROR if the thread cannot be created. */
+
 tid_t
 process_execute (const char *file_name) 
 {
-  char *fn_copy,*n_copy;
+  char *fn_copy;
+  char *n_copy;
   tid_t tid;
   
   /* Make a copy of FILE_NAME.
      Otherwise there's a race between the caller and load(). */
   fn_copy = palloc_get_page (0);
-  n_copy = palloc_get_page (0);
   if (fn_copy == NULL)
     return TID_ERROR;
   strlcpy (fn_copy, file_name, PGSIZE);
-  strlcpy (n_copy, file_name, PGSIZE);
   char *save_ptr;
-  file_name = strtok_r (n_copy," ",&save_ptr);
-  
+  n_copy= malloc(strlen(file_name)+1);
+  strlcpy (n_copy, file_name, strlen(file_name)+1);
+  n_copy = strtok_r (n_copy," ",&save_ptr);
   /* Create a new thread to execute FILE_NAME. */
-  tid = thread_create (file_name, PRI_DEFAULT, start_process, fn_copy);
-  if (tid == TID_ERROR){
-    palloc_free_page (fn_copy);
-    palloc_free_page(n_copy); }
+  //printf("%d\n", thread_current()->tid);
+  
+  
+  tid = thread_create (n_copy, PRI_DEFAULT, start_process, fn_copy);
+  free(n_copy);
+  
+  if (tid == TID_ERROR)
+    palloc_free_page (fn_copy); 
   while(!thread_current()->ex){
      thread_yield();
   }
   if(thread_current()->cstatus==-1){
     return -1;
   }
-  //palloc_free_page(n_copy);
+ 
+
   return tid;
 }
+
+struct file_pointer* close_opened_file(char* ofn){
+	    struct list_elem *e ;
+        struct thread *t = thread_current();
+		
+        for (e = list_begin (&t->opened_files); e != list_end (&t->opened_files); e = list_next (e)){
+        struct file_pointer *fp= list_entry(e, struct file_pointer, elem);
+        if(fp->fname == ofn){
+		
+		return fp;
+        
+        //free(fp);
+        //break;
+        }
+        }
+		return NULL;
+	}
 
 /* A thread function that loads a user process and starts it
    running. */
@@ -75,6 +100,7 @@ start_process (void *file_name_)
   if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
   if_.cs = SEL_UCSEG;
   if_.eflags = FLAG_IF | FLAG_MBS;
+  
   success = load (file_name, &if_.eip, &if_.esp);
 
   /* If load failed, quit. */
@@ -120,6 +146,14 @@ process_exit (void)
 
   int exit_code = 0;
   printf("%s: exit(%d)\n",cur->name,cur->exit_status);
+
+ 
+    // acquire_filesys_lock();
+    
+    //close_all_files(&thread_current()->files);
+    //release_filesys_lock();
+    //printf("hiiiiiiiiiii");
+   
   
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
@@ -136,6 +170,9 @@ process_exit (void)
       cur->pagedir = NULL;
       pagedir_activate (NULL);
       pagedir_destroy (pd);
+      file_close(cur->opfile);
+      cur->opfile=NULL;
+      
     }
 }
 
@@ -252,6 +289,13 @@ load (const char *file_name, void (**eip) (void), void **esp)
   
   char * save_ptr;
   fn_cp = strtok_r(fn_cp," ",&save_ptr);
+  //printf("%sxnxx",fn_cp);
+  /*struct file_pointer* fp = close_opened_file(fn_cp);
+  if(fp!=NULL){
+    //printf("hiiiiiiiiiii");
+    file_close(fp->fname); 
+  }*/
+ 
   file = filesys_open (fn_cp);
   //TODO : Free fn_cp
   
@@ -339,12 +383,19 @@ load (const char *file_name, void (**eip) (void), void **esp)
 
   /* Start address. */
   *eip = (void (*) (void)) ehdr.e_entry;
-
+  
   success = true;
+  //file_deny_write(file);
+  //thread_current()->opfile = file;
 
  done:
   /* We arrive here whether the load is successful or not. */
-  file_close (file);
+  if(success){
+    file_deny_write(file);
+   thread_current()->opfile = file;
+  }
+else{
+  file_close (file);}
   return success;
 }
 

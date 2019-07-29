@@ -93,6 +93,7 @@ struct thread
     int exit_status;
     bool ex;
     int cstatus;
+    struct file *opfile;
 
     struct thread* parent;
 
